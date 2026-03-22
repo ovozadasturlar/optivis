@@ -1,0 +1,375 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OptiVis.UI.Shared.ViewModels"
+             xmlns:i="https://github.com/projektanker/icons.avalonia"
+             xmlns:ext="using:OptiVis.UI.Shared.Extensions"
+             x:Class="OptiVis.UI.Shared.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Border.operator-row">
+            <Setter Property="Background" Value="{DynamicResource HoverBrush}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Margin" Value="0,2"/>
+        </Style>
+        <Style Selector="Button.danger-button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#EF4444"/>
+            <Setter Property="Padding" Value="6"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="Button.danger-button:pointerover">
+            <Setter Property="Background" Value="#EF444420"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Panel>
+        <ScrollViewer>
+            <StackPanel Margin="24" Spacing="20" MaxWidth="700">
+
+                <!-- Sarlavha -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{ext:Localize Settings}" Classes="title"/>
+                    <TextBlock Text="{ext:Localize AppDescription}" Classes="subtitle"/>
+                </StackPanel>
+
+                <!-- ═══════════════════════════════════════════════════════════════ -->
+                <!-- 1. Ko'rinish va til sozlamalari -->
+                <!-- ═══════════════════════════════════════════════════════════════ -->
+                <Border Classes="card">
+                    <StackPanel Spacing="20">
+
+                        <!-- Tema -->
+                        <StackPanel Spacing="12">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <i:Icon Value="mdi-palette" FontSize="20" Foreground="#3B82F6"/>
+                                <TextBlock Text="{ext:Localize Appearance}" FontWeight="SemiBold"
+                                           FontSize="16" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            </StackPanel>
+                            <Grid ColumnDefinitions="*,200" Margin="0,4,0,0">
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="{ext:Localize Theme}"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="{ext:Localize ThemeDescription}" Classes="subtitle" FontSize="12"/>
+                                </StackPanel>
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding AvailableThemes}"
+                                          SelectedItem="{Binding SelectedTheme, Mode=TwoWay}"
+                                          HorizontalAlignment="Stretch"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <Border Height="1" Background="{DynamicResource BorderBrush}"/>
+
+                        <!-- Til -->
+                        <StackPanel Spacing="12">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <i:Icon Value="mdi-translate" FontSize="20" Foreground="#3B82F6"/>
+                                <TextBlock Text="{ext:Localize Language}" FontWeight="SemiBold"
+                                           FontSize="16" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            </StackPanel>
+                            <Grid ColumnDefinitions="*,200" Margin="0,4,0,0">
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="{ext:Localize Language}"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="{ext:Localize LanguageDescription}" Classes="subtitle" FontSize="12"/>
+                                </StackPanel>
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding AvailableLanguages}"
+                                          SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
+                                          HorizontalAlignment="Stretch"/>
+                            </Grid>
+                        </StackPanel>
+
+                    </StackPanel>
+                </Border>
+
+                <!-- ═══════════════════════════════════════════════════════════════ -->
+                <!-- 2. Operatorlar boshqaruvi -->
+                <!-- ═══════════════════════════════════════════════════════════════ -->
+                <Border Classes="card">
+                    <StackPanel Spacing="16">
+
+                        <!-- Sarlavha -->
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <i:Icon Value="mdi-account-group" FontSize="20" Foreground="#3B82F6"/>
+                            <TextBlock Text="{ext:Localize OperatorManagement}" FontWeight="SemiBold"
+                                       FontSize="16" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        </StackPanel>
+
+                        <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"
+                                   Text="{ext:Localize OperatorManagementDesc}" TextWrapping="Wrap"/>
+
+                        <!-- Ustun sarlavhalari -->
+                        <Grid ColumnDefinitions="44,*,180,40" Margin="8,0" ColumnSpacing="12">
+                            <TextBlock Grid.Column="1" Text="{ext:Localize FullName}" FontSize="11"
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontWeight="SemiBold"/>
+                            <TextBlock Grid.Column="2" Text="{ext:Localize MobileNumber}" FontSize="11"
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontWeight="SemiBold"/>
+                        </Grid>
+
+                        <!-- Operator ro'yxati -->
+                        <StackPanel IsVisible="{Binding IsLoadingProfiles}"
+                                    Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                            <i:Icon Value="mdi-loading" FontSize="16"
+                                    Foreground="{DynamicResource AccentBrush}"/>
+                            <TextBlock Text="{ext:Localize Loading}" FontSize="12"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <ItemsControl ItemsSource="{Binding OperatorProfiles}"
+                                      IsVisible="{Binding !IsLoadingProfiles}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Classes="operator-row">
+                                        <Grid ColumnDefinitions="44,*,180,40" ColumnSpacing="12"
+                                              VerticalAlignment="Center">
+
+                                            <!-- Avatar -->
+                                            <Border Grid.Column="0"
+                                                    Width="36" Height="36" CornerRadius="18"
+                                                    Background="{Binding AvatarColor}">
+                                                <TextBlock Text="{Binding Extension}"
+                                                           Foreground="White" FontSize="11" FontWeight="Bold"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+
+                                            <!-- Ism maydoni -->
+                                            <TextBox Grid.Column="1"
+                                                     Text="{Binding Name, Mode=TwoWay}"
+                                                     Watermark="{ext:Localize FullName}"
+                                                     LostFocus="OnProfileNameLostFocus"/>
+
+                                            <!-- Mobil raqam -->
+                                            <TextBox Grid.Column="2"
+                                                     Text="{Binding MobileNumber, Mode=TwoWay}"
+                                                     Watermark="998XXXXXXXXX"
+                                                     LostFocus="OnProfileMobileLostFocus"/>
+
+                                            <!-- O'chirish tugmasi -->
+                                            <Button Grid.Column="3" Classes="danger-button"
+                                                    Click="OnRemoveOperator"
+                                                    ToolTip.Tip="{ext:Localize RemoveOperator}">
+                                                <i:Icon Value="mdi-delete-outline" FontSize="18"/>
+                                            </Button>
+
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Qo'lda operator qo'shish -->
+                        <Border Height="1" Background="{DynamicResource BorderBrush}"/>
+
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <TextBox x:Name="NewExtensionBox"
+                                     Watermark="{ext:Localize ExtensionExample}"
+                                     Width="160"
+                                     Text=""/>
+                            <TextBox x:Name="NewNameBox"
+                                     Watermark="{ext:Localize FullName}"
+                                     Width="200"
+                                     Text=""/>
+                            <Button Classes="secondary-button" Click="OnAddOperator">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <i:Icon Value="mdi-plus" FontSize="15"/>
+                                    <TextBlock Text="{ext:Localize AddOperator}"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+
+                        <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"
+                                   Text="{ext:Localize AddOperatorHint}"/>
+
+                    </StackPanel>
+                </Border>
+
+                <!-- ═══════════════════════════════════════════════════════════════ -->
+                <!-- 3. Backend ulanish va Ma'lumot yangilanish intervali -->
+                <Border Classes="card">
+                    <StackPanel Spacing="16">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <i:Icon Value="mdi-connection" FontSize="20" Foreground="#3B82F6"/>
+                            <TextBlock Text="{ext:Localize ConnectionStatus}" FontWeight="SemiBold"
+                                       FontSize="16" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        </StackPanel>
+
+                        <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"
+                                   Text="{ext:Localize BackendUrlHint}" TextWrapping="Wrap"/>
+
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <TextBox Grid.Column="0"
+                                     Text="{Binding BackendUrl, Mode=TwoWay}"
+                                     Watermark="https://example.com/"/>
+                            <Button Grid.Column="1" Classes="primary-button"
+                                    Command="{Binding SaveBackendUrlCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <i:Icon Value="mdi-content-save" FontSize="15"/>
+                                    <TextBlock Text="{ext:Localize Save}"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <TextBlock Text="{Binding BackendUrlMessage}"
+                                   IsVisible="{Binding HasBackendUrlMessage}"
+                                   FontSize="12"
+                                   TextWrapping="Wrap">
+                            <TextBlock.Foreground>
+                                <SolidColorBrush Color="{Binding BackendUrlMessageColor}"/>
+                            </TextBlock.Foreground>
+                        </TextBlock>
+
+                        <Border Height="1" Background="{DynamicResource BorderBrush}"/>
+
+                        <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{ext:Localize BackendConnection}"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <TextBlock Text="{ext:Localize SignalRConnection}" Classes="subtitle" FontSize="12"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Ellipse Width="10" Height="10">
+                                        <Ellipse.Fill>
+                                            <SolidColorBrush Color="{Binding ConnectionStatusColor}"/>
+                                        </Ellipse.Fill>
+                                    </Ellipse>
+                                    <TextBlock Text="{Binding ConnectionStatusText}" 
+                                               VerticalAlignment="Center">
+                                        <TextBlock.Foreground>
+                                            <SolidColorBrush Color="{Binding ConnectionStatusColor}"/>
+                                        </TextBlock.Foreground>
+                                    </TextBlock>
+                                </StackPanel>
+                                <Button Classes="primary-button"
+                                        Command="{Binding ReconnectCommand}"
+                                        IsEnabled="{Binding !IsConnecting}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <i:Icon Value="mdi-refresh" FontSize="15"/>
+                                        <TextBlock Text="{ext:Localize Reconnect}"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- ═══════════════════════════════════════════════════════════════ -->
+                <!-- 4. Ilova haqida -->
+                <!-- ═══════════════════════════════════════════════════════════════ -->
+                <Border Classes="card">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <i:Icon Value="mdi-information" FontSize="20" Foreground="#3B82F6"/>
+                            <TextBlock Text="{ext:Localize About}" FontWeight="SemiBold"
+                                       FontSize="16" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,4,0,0" Spacing="8">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Border Width="48" Height="48" CornerRadius="8" Background="#3B82F6">
+                                    <i:Icon Value="mdi-chart-timeline-variant" FontSize="28" Foreground="White"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="OptiVis" FontWeight="Bold" FontSize="18"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="PRECISION LENS" FontSize="10"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <TextBlock Classes="subtitle" FontSize="12">
+                                <Run Text="{ext:Localize AppVersion}"/>
+                                <Run Text=": "/>
+                                <Run Text="{Binding AppVersion}"/>
+                            </TextBlock>
+                            <TextBlock Text="{ext:Localize AppInfo}"
+                                       Classes="subtitle" FontSize="12" TextWrapping="Wrap"/>
+                            
+                            <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,8,0,4"/>
+                            
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Ovoza Dasturlar" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <TextBlock Text="{ext:Localize OvozaDescription}"
+                                           Classes="subtitle" FontSize="12" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            
+                            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
+                                <Button Classes="outline-button" Click="OnTelegramClick">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <i:Icon Value="mdi-send" FontSize="18" Foreground="#0088CC"/>
+                                        <TextBlock Text="@ovozadasturlar" Foreground="#0088CC" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Classes="outline-button" Click="OnBotClick">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <i:Icon Value="mdi-robot" FontSize="18" Foreground="#0088CC"/>
+                                        <TextBlock Text="@ovoza_robot" Foreground="#0088CC" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                            
+                            <TextBlock Text="{Binding Copyright}" Classes="subtitle" FontSize="11" Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- Operator o'chirish confirmation dialog -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <Border IsVisible="{Binding ShowRemoveConfirmation}"
+                Background="#80000000"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+            <Border Background="{DynamicResource CardBackgroundBrush}"
+                    CornerRadius="12"
+                    Padding="24"
+                    MaxWidth="400"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    BoxShadow="0 4 20 #40000000">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <i:Icon Value="mdi-alert-circle" FontSize="24" Foreground="#F59E0B"/>
+                        <TextBlock Text="{ext:Localize Warning}" 
+                                   FontWeight="SemiBold" FontSize="18"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    
+                    <TextBlock Text="{ext:Localize ConfirmRemoveOperator}"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               TextWrapping="Wrap"/>
+                    
+                    <TextBlock Text="{Binding OperatorToRemove}"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource AccentBrush}"
+                               HorizontalAlignment="Center"/>
+                    
+                    <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Right">
+                        <Button Classes="outline-button" Command="{Binding CancelRemoveCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <i:Icon Value="mdi-close" FontSize="15"/>
+                                <TextBlock Text="{ext:Localize No}"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="primary-button" Command="{Binding ConfirmRemoveCommand}"
+                                Background="#EF4444">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <i:Icon Value="mdi-delete" FontSize="15"/>
+                                <TextBlock Text="{ext:Localize Yes}"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Border>
+    </Panel>
+</UserControl>

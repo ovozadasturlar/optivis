@@ -1,0 +1,369 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OptiVis.UI.Shared.ViewModels"
+             xmlns:conv="using:OptiVis.UI.Shared.Converters"
+             xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
+             xmlns:ext="using:OptiVis.UI.Shared.Extensions"
+             xmlns:i="https://github.com/projektanker/icons.avalonia"
+             x:Class="OptiVis.UI.Shared.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+
+    <UserControl.Resources>
+        <conv:TimeSpanFormatConverter x:Key="TimeSpanFormat"/>
+        <conv:PercentageFormatConverter x:Key="PercentageFormat"/>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <Style Selector="Border.stat-card-modern">
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="MinWidth" Value="160"/>
+            <Setter Property="BoxShadow" Value="0 2 8 0 #10000000"/>
+            <Setter Property="Margin" Value="0,0,12,12"/>
+        </Style>
+        <Style Selector="TextBlock.stat-value">
+            <Setter Property="FontSize" Value="26"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="TextBlock.stat-label">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
+        </Style>
+        <Style Selector="Button.quick-btn">
+            <Setter Property="Background" Value="{DynamicResource HoverBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="Button.quick-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" Spacing="20">
+
+            <!-- Header Row -->
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{ext:Localize PrecisionDashboard}" Classes="title"/>
+                    <TextBlock Text="{ext:Localize RealTimeMetrics}" Classes="subtitle"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <!-- Tez sana tugmalari -->
+                    <Button Classes="quick-btn" Click="OnSetToday" Content="{ext:Localize Today}"/>
+                    <Button Classes="quick-btn" Click="OnSetYesterday" Content="{ext:Localize Yesterday}"/>
+                    <Button Classes="quick-btn" Click="OnSetWeek" Content="{ext:Localize Week}"/>
+                    <Button Classes="quick-btn" Click="OnSetMonth" Content="{ext:Localize Month}"/>
+
+                    <!-- Sana picker'lar -->
+                    <StackPanel Spacing="2" Margin="8,0,0,0">
+                        <TextBlock Text="{ext:Localize From}" FontSize="12"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <DatePicker SelectedDate="{Binding FromDate}" Width="150"/>
+                    </StackPanel>
+                    <TextBlock Text="—" VerticalAlignment="Center" Margin="0,18,0,0"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="{ext:Localize To}" FontSize="12"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <DatePicker SelectedDate="{Binding ToDate}" Width="150"/>
+                    </StackPanel>
+                    <Button Classes="primary-button" Content="Excel eksport"
+                            Click="OnExportXlsx" VerticalAlignment="Bottom" Margin="0,0,0,2"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Yuklanmoqda indikator -->
+            <Border IsVisible="{Binding IsLoading}" HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <i:Icon Value="mdi-loading" FontSize="18"
+                            Foreground="{DynamicResource AccentBrush}"/>
+                    <TextBlock Text="{ext:Localize Loading}"
+                               Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card" Padding="16">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <i:Icon Value="mdi-phone" FontSize="18" Foreground="#6366F1"/>
+                        <TextBlock Text="{ext:Localize GeneralStats}" FontWeight="SemiBold" FontSize="14"/>
+                    </StackPanel>
+                    <WrapPanel Orientation="Horizontal">
+                        <Border Classes="stat-card-modern" BorderBrush="#6366F1" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Summary.TotalCalls}" Classes="stat-value" Foreground="#6366F1"/>
+                                <TextBlock Text="{ext:Localize TotalCalls}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat-card-modern" BorderBrush="#10B981" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding TotalAnswered}" Classes="stat-value" Foreground="#10B981"/>
+                                <TextBlock Text="{ext:Localize Connected}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat-card-modern" BorderBrush="#EF4444" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding TotalNotAnswered}" Classes="stat-value" Foreground="#EF4444"/>
+                                <TextBlock Text="{ext:Localize NotConnected}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat-card-modern" BorderBrush="#EC4899" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Summary.TotalTalkTime, Converter={StaticResource TimeSpanFormat}, Mode=OneWay}"
+                                           Classes="stat-value" Foreground="#EC4899"/>
+                                <TextBlock Text="{ext:Localize TotalTalkTime}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat-card-modern" BorderBrush="#F59E0B" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Summary.TotalDuration, Converter={StaticResource TimeSpanFormat}, Mode=OneWay}"
+                                           Classes="stat-value" Foreground="#F59E0B"/>
+                                <TextBlock Text="{ext:Localize TotalDuration}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card" Padding="16">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <i:Icon Value="mdi-phone-outgoing" FontSize="18" Foreground="#8B5CF6"/>
+                        <TextBlock Text="{ext:Localize OutboundCalls}" FontWeight="SemiBold" FontSize="14"/>
+                    </StackPanel>
+                    <WrapPanel Orientation="Horizontal">
+                        <Border Classes="stat-card-modern" BorderBrush="#8B5CF6" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Summary.TotalOutgoing}" Classes="stat-value" Foreground="#8B5CF6"/>
+                                <TextBlock Text="{ext:Localize TotalOutgoing}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat-card-modern" BorderBrush="#10B981" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Summary.AnsweredOutgoing}" Classes="stat-value" Foreground="#10B981"/>
+                                <TextBlock Text="{ext:Localize GotAnswer}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat-card-modern" BorderBrush="#EF4444" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Summary.MissedOutgoing}" Classes="stat-value" Foreground="#EF4444"/>
+                                <TextBlock Text="{ext:Localize NoAnswerGot}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat-card-modern" BorderBrush="#06B6D4" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Summary.OutgoingAnswerRate, StringFormat={}{0:F1}%}"
+                                           Classes="stat-value" Foreground="#06B6D4"/>
+                                <TextBlock Text="{ext:Localize AnswerRate}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat-card-modern" BorderBrush="#EC4899" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Summary.AvgOutgoingTalkTime, Converter={StaticResource TimeSpanFormat}, Mode=OneWay}"
+                                           Classes="stat-value" Foreground="#EC4899"/>
+                                <TextBlock Text="{ext:Localize AvgTalkTime}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat-card-modern" BorderBrush="#F59E0B" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Summary.AvgOutgoingDuration, Converter={StaticResource TimeSpanFormat}, Mode=OneWay}"
+                                           Classes="stat-value" Foreground="#F59E0B"/>
+                                <TextBlock Text="{ext:Localize AvgDuration}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card" Padding="16">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <i:Icon Value="mdi-phone-incoming" FontSize="18" Foreground="#3B82F6"/>
+                        <TextBlock Text="{ext:Localize InboundCalls}" FontWeight="SemiBold" FontSize="14"/>
+                    </StackPanel>
+                    <WrapPanel Orientation="Horizontal">
+                        <Border Classes="stat-card-modern" BorderBrush="#3B82F6" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Summary.TotalIncoming}" Classes="stat-value" Foreground="#3B82F6"/>
+                                <TextBlock Text="{ext:Localize TotalIncoming}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat-card-modern" BorderBrush="#10B981" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Summary.AnsweredIncoming}" Classes="stat-value" Foreground="#10B981"/>
+                                <TextBlock Text="{ext:Localize Answered}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat-card-modern" BorderBrush="#F59E0B" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Summary.MissedIncoming}" Classes="stat-value" Foreground="#F59E0B"/>
+                                <TextBlock Text="{ext:Localize Missed}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat-card-modern" BorderBrush="#EF4444" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Summary.Abandoned}" Classes="stat-value" Foreground="#EF4444"/>
+                                <TextBlock Text="{ext:Localize Cancelled}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat-card-modern" BorderBrush="#06B6D4" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Summary.AnswerRate, StringFormat={}{0:F1}%}"
+                                           Classes="stat-value" Foreground="#06B6D4"/>
+                                <TextBlock Text="{ext:Localize AnswerRate}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat-card-modern" BorderBrush="#84CC16" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Summary.AvgWaitTime, Converter={StaticResource TimeSpanFormat}, Mode=OneWay}"
+                                           Classes="stat-value" Foreground="#84CC16"/>
+                                <TextBlock Text="{ext:Localize AvgWaitTime}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="stat-card-modern" BorderBrush="#EC4899" BorderThickness="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Summary.AvgIncomingTalkTime, Converter={StaticResource TimeSpanFormat}, Mode=OneWay}"
+                                           Classes="stat-value" Foreground="#EC4899"/>
+                                <TextBlock Text="{ext:Localize AvgTalkTime}" Classes="stat-label"/>
+                            </StackPanel>
+                        </Border>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <Grid ColumnDefinitions="2*,*" ColumnSpacing="12">
+                <Border Grid.Column="0" Classes="card" MinHeight="360">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{ext:Localize CallTrends}" FontWeight="SemiBold"
+                                   FontSize="16" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <lvc:CartesianChart Height="300"
+                                            Series="{Binding TrendSeries}"
+                                            XAxes="{Binding XAxes}"
+                                            YAxes="{Binding YAxes}"
+                                            TooltipPosition="Top"
+                                            ZoomMode="X"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Classes="card" VerticalAlignment="Top" MinHeight="360">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="{ext:Localize RecentCalls}" FontWeight="SemiBold"
+                                   FontSize="15" Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+                        <StackPanel IsVisible="{Binding !RecentCalls.Count}"
+                                    HorizontalAlignment="Center" Margin="0,20">
+                            <i:Icon Value="mdi-phone-off" FontSize="36"
+                                    Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.3"
+                                    HorizontalAlignment="Center"/>
+                            <TextBlock Text="{ext:Localize NoCalls}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       HorizontalAlignment="Center" Margin="0,8,0,0" FontSize="13"/>
+                        </StackPanel>
+
+                        <ScrollViewer MaxHeight="300" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding RecentCalls}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Spacing="6"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{DynamicResource HoverBrush}" CornerRadius="8" Padding="12,8">
+                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                                <i:Icon Value="{Binding StatusIcon, Mode=OneWay}" FontSize="18"
+                                                        Foreground="{Binding StatusColor, Mode=OneWay}"
+                                                        VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                                <StackPanel Grid.Column="1" Spacing="1">
+                                                    <TextBlock Text="{Binding Src, Mode=OneWay}" FontWeight="Medium"
+                                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                    <TextBlock Text="{Binding CallDate, Mode=OneWay, StringFormat={}{0:dd MMM HH:mm:ss}}"
+                                                               FontSize="11"
+                                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                                </StackPanel>
+                                                <Border Grid.Column="2" CornerRadius="4" Padding="8,2"
+                                                        Background="{Binding StatusColor, Mode=OneWay}" VerticalAlignment="Center"
+                                                        Margin="8,0">
+                                                    <TextBlock Text="{Binding Disposition, Mode=OneWay}"
+                                                               Foreground="White" FontSize="10" FontWeight="SemiBold"/>
+                                                </Border>
+                                                <TextBlock Grid.Column="3" Text="{Binding DurationFormatted, Mode=OneWay}"
+                                                           VerticalAlignment="Center" FontSize="12"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Border Classes="card" Padding="20">
+                <StackPanel Spacing="20">
+                    <TextBlock Text="{ext:Localize StatusDistribution}" FontWeight="SemiBold" FontSize="16"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="20">
+                        <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                            <TextBlock Text="{ext:Localize General}" FontSize="14" FontWeight="SemiBold" 
+                                       HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                            <lvc:PieChart Width="220" Height="220" Series="{Binding OverallSeries}"
+                                          InitialRotation="-90" LegendPosition="Hidden"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                            <TextBlock Text="{ext:Localize Outgoing}" FontSize="14" FontWeight="SemiBold"
+                                       HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                            <lvc:PieChart Width="220" Height="220" Series="{Binding OutgoingSeries}"
+                                          InitialRotation="-90" LegendPosition="Hidden"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                            <TextBlock Text="{ext:Localize Incoming}" FontSize="14" FontWeight="SemiBold"
+                                       HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                            <lvc:PieChart Width="220" Height="220" Series="{Binding IncomingSeries}"
+                                          InitialRotation="-90" LegendPosition="Hidden"/>
+                        </StackPanel>
+                    </Grid>
+                    
+                    <WrapPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="8,4">
+                            <Border Width="14" Height="14" CornerRadius="3" Background="#10B981"/>
+                            <TextBlock Text="{ext:Localize Connected}" FontSize="12" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="8,4">
+                            <Border Width="14" Height="14" CornerRadius="3" Background="#F59E0B"/>
+                            <TextBlock Text="{ext:Localize Missed}" FontSize="12" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="8,4">
+                            <Border Width="14" Height="14" CornerRadius="3" Background="#EC4899"/>
+                            <TextBlock Text="{ext:Localize Cancelled}" FontSize="12" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="8,4">
+                            <Border Width="14" Height="14" CornerRadius="3" Background="#F97316"/>
+                            <TextBlock Text="{ext:Localize NoAnswerGot}" FontSize="12" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="8,4">
+                            <Border Width="14" Height="14" CornerRadius="3" Background="#8B5CF6"/>
+                            <TextBlock Text="{ext:Localize Outgoing}" FontSize="12" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="8,4">
+                            <Border Width="14" Height="14" CornerRadius="3" Background="#3B82F6"/>
+                            <TextBlock Text="{ext:Localize Incoming}" FontSize="12" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

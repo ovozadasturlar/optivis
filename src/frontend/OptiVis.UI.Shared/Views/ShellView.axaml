@@ -1,0 +1,222 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:OptiVis.UI.Shared.ViewModels"
+             xmlns:views="using:OptiVis.UI.Shared.Views"
+             xmlns:i="https://github.com/projektanker/icons.avalonia"
+             xmlns:ext="using:OptiVis.UI.Shared.Extensions"
+             xmlns:conv="using:OptiVis.UI.Shared.Converters"
+             mc:Ignorable="d" d:DesignWidth="1400" d:DesignHeight="750"
+             x:Class="OptiVis.UI.Shared.Views.ShellView"
+             x:DataType="vm:MainViewModel"
+             x:CompileBindings="False">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border x:Name="SidebarBorder" Grid.Column="0" Width="240" Classes="sidebar" ClipToBounds="True">
+            <DockPanel>
+                <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" Margin="12,12,8,10">
+                    <!-- Logo (sidebar ochiq holatda) -->
+                    <Border Width="{Binding IsSidebarCollapsed, Converter={x:Static conv:SidebarLogoSizeConverter.Instance}}"
+                            Height="{Binding IsSidebarCollapsed, Converter={x:Static conv:SidebarLogoSizeConverter.Instance}}"
+                            CornerRadius="8" Background="#3B82F6" VerticalAlignment="Center"
+                            IsVisible="{Binding !IsSidebarCollapsed}">
+                        <i:Icon Value="mdi-chart-timeline-variant" FontSize="20" Foreground="White"/>
+                    </Border>
+                    
+                    <!-- Logo tugma (sidebar yopiq holatda, hover qilsa burger ko'rinadi) -->
+                    <Button Grid.Column="0" Background="Transparent" BorderThickness="0" Padding="0"
+                            Cursor="Hand" VerticalAlignment="Center"
+                            Command="{Binding ToggleSidebarCommand}"
+                            IsVisible="{Binding IsSidebarCollapsed}"
+                            ToolTip.Tip="Open sidebar"
+                            x:Name="LogoButton">
+                        <Button.Styles>
+                            <Style Selector="Button#LogoButton">
+                                <Setter Property="Content">
+                                    <Template>
+                                        <Border Width="32" Height="32" CornerRadius="8" Background="#3B82F6">
+                                            <i:Icon Value="mdi-chart-timeline-variant" FontSize="18" Foreground="White"/>
+                                        </Border>
+                                    </Template>
+                                </Setter>
+                            </Style>
+                            <Style Selector="Button#LogoButton:pointerover">
+                                <Setter Property="Content">
+                                    <Template>
+                                        <Border Width="32" Height="32" CornerRadius="8" Background="#3B82F6">
+                                            <i:Icon Value="mdi-menu" FontSize="18" Foreground="White"/>
+                                        </Border>
+                                    </Template>
+                                </Setter>
+                            </Style>
+                        </Button.Styles>
+                    </Button>
+                    
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0"
+                                IsVisible="{Binding !IsSidebarCollapsed}">
+                        <TextBlock Text="OptiVis" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="PRECISION LENS" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </StackPanel>
+                    <Button Grid.Column="2" Background="Transparent" BorderThickness="0"
+                            Padding="6" Cursor="Hand" VerticalAlignment="Center"
+                            Command="{Binding ToggleSidebarCommand}"
+                            IsVisible="{Binding !IsSidebarCollapsed}">
+                        <i:Icon Value="mdi-menu" FontSize="20" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </Button>
+                </Grid>
+
+                <Border DockPanel.Dock="Top" Height="1" Background="{DynamicResource BorderBrush}" Opacity="0.3" Margin="12,4"/>
+
+                <StackPanel DockPanel.Dock="Bottom" Margin="12,12" Spacing="8">
+                    <Border Height="1" Background="{DynamicResource BorderBrush}" Opacity="0.3"/>
+                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                        <Ellipse Width="8" Height="8" Fill="#EF4444" IsVisible="{Binding !IsConnected}"/>
+                        <Ellipse Width="8" Height="8" Fill="#10B981" IsVisible="{Binding IsConnected}"/>
+                        <TextBlock Text="{ext:Localize Connected}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12">
+                            <TextBlock.IsVisible>
+                                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                    <Binding Path="IsConnected"/>
+                                    <Binding Path="!IsSidebarCollapsed"/>
+                                </MultiBinding>
+                            </TextBlock.IsVisible>
+                        </TextBlock>
+                        <TextBlock Text="{ext:Localize Disconnected}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12">
+                            <TextBlock.IsVisible>
+                                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                    <Binding Path="!IsConnected"/>
+                                    <Binding Path="!IsSidebarCollapsed"/>
+                                </MultiBinding>
+                            </TextBlock.IsVisible>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+
+                <ScrollViewer Margin="0,8">
+                    <StackPanel Margin="8,0" Spacing="4">
+                        <Panel Margin="0,1,4,1">
+                            <Border CornerRadius="0,8,8,0" Background="Transparent"
+                                    Classes.nav-active="{Binding IsDashboardActive}">
+                                <Button Background="Transparent" BorderThickness="0"
+                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                        Click="OnNavDashboard" Padding="12,10"
+                                        ToolTip.Tip="{Binding DashboardVM.NavTitle}">
+                                    <Grid ColumnDefinitions="24,*">
+                                        <i:Icon Value="mdi-view-dashboard" FontSize="20"
+                                                Classes.nav-active="{Binding IsDashboardActive}"
+                                                Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding DashboardVM.NavTitle}" FontSize="14"
+                                                   VerticalAlignment="Center" Margin="12,0,0,0"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                                   IsVisible="{Binding !IsSidebarCollapsed}"/>
+                                    </Grid>
+                                </Button>
+                            </Border>
+                            <Border Width="3" CornerRadius="0,1.5,1.5,0"
+                                    Background="{DynamicResource AccentBrush}"
+                                    HorizontalAlignment="Left" VerticalAlignment="Stretch"
+                                    Margin="0,4" IsVisible="{Binding IsDashboardActive}"/>
+                        </Panel>
+
+                        <Panel Margin="0,1,4,1">
+                            <Border CornerRadius="0,8,8,0" Background="Transparent"
+                                    Classes.nav-active="{Binding IsOperatorsActive}">
+                                <Button Background="Transparent" BorderThickness="0"
+                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                        Click="OnNavOperators" Padding="12,10"
+                                        ToolTip.Tip="{Binding OperatorsVM.NavTitle}">
+                                    <Grid ColumnDefinitions="24,*">
+                                        <i:Icon Value="mdi-account-group" FontSize="20"
+                                                Classes.nav-active="{Binding IsOperatorsActive}"
+                                                Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding OperatorsVM.NavTitle}" FontSize="14"
+                                                   VerticalAlignment="Center" Margin="12,0,0,0"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                                   IsVisible="{Binding !IsSidebarCollapsed}"/>
+                                    </Grid>
+                                </Button>
+                            </Border>
+                            <Border Width="3" CornerRadius="0,1.5,1.5,0"
+                                    Background="{DynamicResource AccentBrush}"
+                                    HorizontalAlignment="Left" VerticalAlignment="Stretch"
+                                    Margin="0,4" IsVisible="{Binding IsOperatorsActive}"/>
+                        </Panel>
+
+                        <Panel Margin="0,1,4,1">
+                            <Border CornerRadius="0,8,8,0" Background="Transparent"
+                                    Classes.nav-active="{Binding IsSearchActive}">
+                                <Button Background="Transparent" BorderThickness="0"
+                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                        Click="OnNavSearch" Padding="12,10"
+                                        ToolTip.Tip="{Binding SearchVM.NavTitle}">
+                                    <Grid ColumnDefinitions="24,*">
+                                        <i:Icon Value="mdi-file-document-multiple" FontSize="20"
+                                                Classes.nav-active="{Binding IsSearchActive}"
+                                                Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding SearchVM.NavTitle}" FontSize="14"
+                                                   VerticalAlignment="Center" Margin="12,0,0,0"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                                   IsVisible="{Binding !IsSidebarCollapsed}"/>
+                                    </Grid>
+                                </Button>
+                            </Border>
+                            <Border Width="3" CornerRadius="0,1.5,1.5,0"
+                                    Background="{DynamicResource AccentBrush}"
+                                    HorizontalAlignment="Left" VerticalAlignment="Stretch"
+                                    Margin="0,4" IsVisible="{Binding IsSearchActive}"/>
+                        </Panel>
+
+                        <Panel Margin="0,1,4,1">
+                            <Border CornerRadius="0,8,8,0" Background="Transparent"
+                                    Classes.nav-active="{Binding IsSettingsActive}">
+                                <Button Background="Transparent" BorderThickness="0"
+                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                        Click="OnNavSettings" Padding="12,10"
+                                        ToolTip.Tip="{Binding SettingsVM.NavTitle}">
+                                    <Grid ColumnDefinitions="24,*">
+                                        <i:Icon Value="mdi-cog" FontSize="20"
+                                                Classes.nav-active="{Binding IsSettingsActive}"
+                                                Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding SettingsVM.NavTitle}" FontSize="14"
+                                                   VerticalAlignment="Center" Margin="12,0,0,0"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                                   IsVisible="{Binding !IsSidebarCollapsed}"/>
+                                    </Grid>
+                                </Button>
+                            </Border>
+                            <Border Width="3" CornerRadius="0,1.5,1.5,0"
+                                    Background="{DynamicResource AccentBrush}"
+                                    HorizontalAlignment="Left" VerticalAlignment="Stretch"
+                                    Margin="0,4" IsVisible="{Binding IsSettingsActive}"/>
+                        </Panel>
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <ContentControl Grid.Column="1" Content="{Binding CurrentView}">
+            <ContentControl.DataTemplates>
+                <DataTemplate DataType="vm:DashboardViewModel">
+                    <views:DashboardView/>
+                </DataTemplate>
+                <DataTemplate DataType="vm:OperatorsViewModel">
+                    <views:OperatorsView/>
+                </DataTemplate>
+                <DataTemplate DataType="vm:SearchViewModel">
+                    <views:SearchView/>
+                </DataTemplate>
+                <DataTemplate DataType="vm:SettingsViewModel">
+                    <views:SettingsView/>
+                </DataTemplate>
+                <DataTemplate DataType="vm:OperatorDetailViewModel">
+                    <views:OperatorDetailView/>
+                </DataTemplate>
+            </ContentControl.DataTemplates>
+        </ContentControl>
+    </Grid>
+</UserControl>

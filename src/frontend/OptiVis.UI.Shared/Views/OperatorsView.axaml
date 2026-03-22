@@ -1,0 +1,328 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OptiVis.UI.Shared.ViewModels"
+             xmlns:conv="using:OptiVis.UI.Shared.Converters"
+             xmlns:i="https://github.com/projektanker/icons.avalonia"
+             xmlns:ext="using:OptiVis.UI.Shared.Extensions"
+             x:Class="OptiVis.UI.Shared.Views.OperatorsView"
+             x:DataType="vm:OperatorsViewModel">
+
+    <UserControl.Resources>
+        <conv:TimeSpanFormatConverter x:Key="TimeSpanFormat"/>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+
+        <!-- Operator karta -->
+        <Style Selector="Border.operator-card">
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+        </Style>
+        <Style Selector="Border.operator-card:pointerover">
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+        </Style>
+
+        <!-- Status badge'lar -->
+        <Style Selector="Border.status-badge-active">
+            <Setter Property="Background" Value="#1A3D2B"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="8,3"/>
+        </Style>
+        <Style Selector="Border.status-badge-active TextBlock">
+            <Setter Property="Foreground" Value="#4ADE80"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+        <Style Selector="Border.status-badge-inactive">
+            <Setter Property="Background" Value="{DynamicResource HoverBrush}"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="8,3"/>
+        </Style>
+        <Style Selector="Border.status-badge-inactive TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+
+        <!-- Jami satri stat -->
+        <Style Selector="TextBlock.sum-label">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+        </Style>
+        <Style Selector="TextBlock.sum-value">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+        </Style>
+
+        <!-- Tez tugmalar -->
+        <Style Selector="Button.pill-btn">
+            <Setter Property="Background" Value="{DynamicResource HoverBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" Margin="24">
+
+        <!-- Sarlavha + Search -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+            <TextBlock Grid.Column="0" Text="{ext:Localize Operators}" Classes="title"/>
+            <TextBox Grid.Column="1"
+                     Text="{Binding SearchText, Mode=TwoWay}"
+                     Watermark="{ext:Localize SearchOperator}"
+                     Width="280"/>
+        </Grid>
+
+        <!-- Tez sana tugmalari -->
+        <Border Grid.Row="1" Classes="card" Margin="0,0,0,12" Padding="14">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="10">
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Button Classes="pill-btn" Click="OnSetToday"     Content="{ext:Localize Today}"/>
+                    <Button Classes="pill-btn" Click="OnSetYesterday" Content="{ext:Localize Yesterday}"/>
+                    <Button Classes="pill-btn" Click="OnSetWeek"      Content="{ext:Localize Week}"/>
+                    <Button Classes="pill-btn" Click="OnSetMonth"     Content="{ext:Localize Month}"/>
+                </StackPanel>
+
+                <!-- Sana picker: Dan -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <TextBlock Text="{ext:Localize From}" VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13"/>
+                    <DatePicker SelectedDate="{Binding FromDate}" Width="135"/>
+                </StackPanel>
+
+                <!-- Sana picker: Gacha -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <TextBlock Text="{ext:Localize To}" VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13"/>
+                    <DatePicker SelectedDate="{Binding ToDate}" Width="135"/>
+                </StackPanel>
+
+                <!-- Export -->
+                <Button Grid.Column="4" Classes="primary-button" Content="{ext:Localize ExcelExport}"
+                        Click="OnExportXlsx" Margin="8,0,0,0"/>
+            </Grid>
+        </Border>
+
+        <!-- Jami statistika satri -->
+        <Border Grid.Row="3" Classes="card" Margin="0,0,0,12" Padding="16,12">
+            <Grid ColumnDefinitions="*,*,*,*,*,*,*">
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="{ext:Localize TotalCalls}" Classes="sum-label"/>
+                    <TextBlock Text="{Binding TotalCallsSum}" Classes="sum-value" Foreground="#6366F1"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="{ext:Localize Incoming}" Classes="sum-label"/>
+                    <TextBlock Text="{Binding TotalIncomingSum}" Classes="sum-value" Foreground="#3B82F6"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="{ext:Localize Outgoing}" Classes="sum-label"/>
+                    <TextBlock Text="{Binding TotalOutgoingSum}" Classes="sum-value" Foreground="#8B5CF6"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="3">
+                    <TextBlock Text="{ext:Localize Connected}" Classes="sum-label"/>
+                    <TextBlock Text="{Binding TotalAnsweredSum}" Classes="sum-value" Foreground="#10B981"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="4">
+                    <TextBlock Text="{ext:Localize SuccessRate}" Classes="sum-label"/>
+                    <TextBlock Text="{Binding SuccessRate, StringFormat={}{0:F1}%}" Classes="sum-value" Foreground="#EC4899"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="5">
+                    <TextBlock Text="{ext:Localize TotalTalkTime}" Classes="sum-label"/>
+                    <TextBlock Text="{Binding TotalTalkTimeSum, Converter={StaticResource TimeSpanFormat}, Mode=OneWay}"
+                               Classes="sum-value"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="6">
+                    <TextBlock Text="{ext:Localize Duration}" Classes="sum-label"/>
+                    <TextBlock Text="{Binding TotalDurationSum, Converter={StaticResource TimeSpanFormat}, Mode=OneWay}"
+                               Classes="sum-value" Foreground="#F59E0B"/>
+                </StackPanel>
+
+            </Grid>
+        </Border>
+
+        <ScrollViewer Grid.Row="4">
+            <StackPanel Spacing="8">
+
+                <StackPanel IsVisible="{Binding IsLoading}"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Margin="0,40" Spacing="12">
+                    <i:Icon Value="mdi-loading" FontSize="36"
+                            Foreground="{DynamicResource AccentBrush}"
+                            HorizontalAlignment="Center"/>
+                    <TextBlock Text="{ext:Localize DataLoading}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel IsVisible="{Binding IsEmpty}"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Margin="0,60" Spacing="12">
+                    <i:Icon Value="mdi-phone-off" FontSize="52"
+                            Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.3"
+                            HorizontalAlignment="Center"/>
+                    <TextBlock Text="{ext:Localize NoCallsInPeriod}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               HorizontalAlignment="Center" FontSize="14"/>
+                </StackPanel>
+
+                <ItemsControl ItemsSource="{Binding Operators}"
+                              IsVisible="{Binding !IsEmpty}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+
+                            <Border Classes="operator-card" Margin="0,0,0,6"
+                                    Cursor="Hand" PointerPressed="OnCardPressed">
+                                <Grid ColumnDefinitions="Auto,*,Auto,100,100,100,100,110,110"
+                                      Margin="16,12">
+
+                                    <Border Grid.Column="0"
+                                            Width="46" Height="46" CornerRadius="23"
+                                            Background="{Binding AvatarColor}"
+                                            Margin="0,0,14,0">
+                                        <TextBlock Text="{Binding Initials}"
+                                                   Foreground="White"
+                                                   FontSize="15" FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="5"
+                                                Margin="0,0,12,0">
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontSize="14" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding Extension, StringFormat=ext {0}}"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                                       VerticalAlignment="Center"/>
+
+                                            <Border Classes="status-badge-active"
+                                                    IsVisible="{Binding IsActiveToday}">
+                                                <TextBlock Text="{ext:Localize Active}"/>
+                                            </Border>
+                                            <Border Classes="status-badge-inactive"
+                                                    IsVisible="{Binding !IsActiveToday}">
+                                                <TextBlock Text="{ext:Localize Inactive}"/>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <!-- Progress bar + foiz -->
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <ProgressBar Grid.Column="0"
+                                                         Value="{Binding OverallAnswerRate}"
+                                                         Maximum="100"
+                                                         Height="5"
+                                                         Foreground="#1D9E75"
+                                                         Background="{DynamicResource BorderBrush}"/>
+                                            <TextBlock Grid.Column="1"
+                                                       FontSize="11" Margin="8,0,0,0"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}">
+                                                <Run Text="{Binding OverallAnswerRate, StringFormat={}{0:F0}%}"/>
+                                                <Run Text=" "/><Run Text="{ext:Localize AnswerRate}"/>
+                                            </TextBlock>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <!-- Ajratgich -->
+                                    <Border Grid.Column="2" Width="1" Height="44"
+                                            Background="{DynamicResource BorderBrush}"
+                                            Margin="4,0"/>
+
+                                    <!-- Jami -->
+                                    <StackPanel Grid.Column="3" HorizontalAlignment="Center"
+                                                Spacing="2" Margin="0">
+                                        <TextBlock Text="{Binding TotalCalls}"
+                                                   FontSize="16" FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"
+                                                   Foreground="#6366F1"/>
+                                        <TextBlock Text="{ext:Localize Total}" FontSize="10"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   HorizontalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <!-- Kiruvchi -->
+                                    <StackPanel Grid.Column="4" HorizontalAlignment="Center"
+                                                Spacing="2" Margin="0">
+                                        <TextBlock Text="{Binding TotalIncoming}"
+                                                   FontSize="16" FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"
+                                                   Foreground="#3B82F6"/>
+                                        <TextBlock Text="{ext:Localize Incoming}" FontSize="10"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   HorizontalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <!-- Chiquvchi -->
+                                    <StackPanel Grid.Column="5" HorizontalAlignment="Center"
+                                                Spacing="2" Margin="0">
+                                        <TextBlock Text="{Binding TotalOutgoing}"
+                                                   FontSize="16" FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"
+                                                   Foreground="#8B5CF6"/>
+                                        <TextBlock Text="{ext:Localize Outgoing}" FontSize="10"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   HorizontalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <!-- Javob -->
+                                    <StackPanel Grid.Column="6" HorizontalAlignment="Center"
+                                                Spacing="2" Margin="0">
+                                        <TextBlock Text="{Binding TotalAnswered}"
+                                                   FontSize="16" FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"
+                                                   Foreground="#10B981"/>
+                                        <TextBlock Text="{ext:Localize Connected}" FontSize="10"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   HorizontalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <!-- BillSec (Suhbat) -->
+                                    <StackPanel Grid.Column="7" HorizontalAlignment="Center"
+                                                Spacing="2" Margin="0">
+                                        <TextBlock Text="{Binding TalkTimeFormatted, Mode=OneWay}"
+                                                   FontSize="14" FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        <TextBlock Text="{ext:Localize TalkTime}" FontSize="10"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   HorizontalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <!-- Duration -->
+                                    <StackPanel Grid.Column="8" HorizontalAlignment="Center"
+                                                Spacing="2" Margin="0">
+                                        <TextBlock Text="{Binding DurationFormatted, Mode=OneWay}"
+                                                   FontSize="14" FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"
+                                                   Foreground="#F59E0B"/>
+                                        <TextBlock Text="{ext:Localize Duration}" FontSize="10"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   HorizontalAlignment="Center"/>
+                                    </StackPanel>
+
+                                </Grid>
+                            </Border>
+
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+            </StackPanel>
+        </ScrollViewer>
+
+    </Grid>
+</UserControl>

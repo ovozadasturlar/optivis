@@ -1,0 +1,222 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OptiVis.UI.Shared.ViewModels"
+             xmlns:m="using:OptiVis.UI.Shared.Models"
+             xmlns:conv="using:OptiVis.UI.Shared.Converters"
+             xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
+             xmlns:i="https://github.com/projektanker/icons.avalonia"
+             xmlns:ext="using:OptiVis.UI.Shared.Extensions"
+             x:Class="OptiVis.UI.Shared.Views.OperatorDetailView"
+             x:DataType="vm:OperatorDetailViewModel">
+
+    <UserControl.Resources>
+        <conv:TimeSpanFormatConverter x:Key="TimeSpanFormat"/>
+        <conv:StatusColorConverter x:Key="StatusColor"/>
+        <conv:InitialsConverter x:Key="InitialsConverter"/>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <Style Selector="Button.quick-btn">
+            <Setter Property="Background" Value="{DynamicResource HoverBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="Button.quick-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Row: Back button + title + date filters -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,16">
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
+                <Button Classes="icon-button" Click="OnBackClick" ToolTip.Tip="{ext:Localize BackToList}">
+                    <i:Icon Value="mdi-arrow-left" FontSize="24" Foreground="#94A3B8"/>
+                </Button>
+                <TextBlock Text="{ext:Localize OperatorProfile}" Classes="title" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Date filters on the right -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Classes="quick-btn" Click="OnSetToday" Content="{ext:Localize Today}"/>
+                <Button Classes="quick-btn" Click="OnSetYesterday" Content="{ext:Localize Yesterday}"/>
+                <Button Classes="quick-btn" Click="OnSetWeek" Content="{ext:Localize Week}"/>
+                <Button Classes="quick-btn" Click="OnSetMonth" Content="{ext:Localize Month}"/>
+                
+                <StackPanel Spacing="2" Margin="8,0,0,0">
+                    <TextBlock Text="{ext:Localize From}" FontSize="10"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <DatePicker SelectedDate="{Binding FromDate}" Width="130"/>
+                </StackPanel>
+                <TextBlock Text="—" VerticalAlignment="Center" Margin="0,10,0,0"
+                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                <StackPanel Spacing="2">
+                    <TextBlock Text="{ext:Localize To}" FontSize="10"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <DatePicker SelectedDate="{Binding ToDate}" Width="130"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <!-- Profile Card -->
+        <Border Grid.Row="1" Classes="card" Margin="0,0,0,16">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="20">
+                    <Border Width="70" Height="70" CornerRadius="35" Background="#3B82F6">
+                        <TextBlock Text="{Binding Operator.Name, Converter={StaticResource InitialsConverter}}"
+                                   Foreground="White" FontSize="24" FontWeight="Bold"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center" Spacing="4">
+                        <TextBlock Text="{Binding Operator.Name}" FontSize="20" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Operator.Extension, StringFormat='Ext: {0}'}" Foreground="#94A3B8" FontSize="13"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="32" VerticalAlignment="Center">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="{ext:Localize TotalCalls}" FontSize="10" Foreground="#94A3B8" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding Operator.TotalCalls}" FontSize="18" FontWeight="Bold"/>
+                    </StackPanel>
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="{ext:Localize SuccessRate}" FontSize="10" Foreground="#94A3B8" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding Operator.SuccessRate, StringFormat={}{0:F1}%}" FontSize="18" FontWeight="Bold" Foreground="#10B981"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main content: Left (stats + chart) | Right (activity list) -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,1.5*" ColumnSpacing="16">
+            
+            <!-- LEFT COLUMN: Stats cards + Chart -->
+            <StackPanel Grid.Column="0" Spacing="16">
+                <!-- Stat cards row -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <Border Grid.Column="0" Classes="card">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="{ext:Localize DailyTalkTime}" FontSize="10" Foreground="#94A3B8" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding TodayTalkTime, Converter={StaticResource TimeSpanFormat}}" 
+                                       FontSize="22" FontWeight="Bold" Foreground="#3B82F6"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="1" Classes="card">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="{ext:Localize AvgResponseTime}" FontSize="10" Foreground="#94A3B8" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <Ellipse Width="10" Height="10" Fill="#10B981"/>
+                                <TextBlock Text="{Binding AvgResponseTime, StringFormat={}{0:F1} min}" 
+                                           FontSize="18" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Chart card -->
+                <Border Classes="card" MinHeight="260">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="{ext:Localize CallTrend}" FontWeight="SemiBold" FontSize="14"/>
+                        <lvc:CartesianChart Height="200"
+                                            Series="{Binding TrendSeries}"
+                                            XAxes="{Binding XAxes}"
+                                            YAxes="{Binding YAxes}"
+                                            TooltipPosition="Top"
+                                            ZoomMode="X"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <Border Grid.Column="1" Classes="card">
+                <Grid RowDefinitions="Auto,*">
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="{ext:Localize RecentActivity}" FontSize="15" FontWeight="SemiBold"/>
+                            <i:Icon Value="mdi-loading" FontSize="16" IsVisible="{Binding IsLoading}"
+                                    Foreground="{DynamicResource AccentBrush}"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" Classes="primary-button" Click="OnExportExcel">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <i:Icon Value="mdi-download" FontSize="16"/>
+                                <TextBlock Text="{ext:Localize ExcelExport}"/>
+                            </StackPanel>
+                            <Button.IsVisible>
+                                <Binding Path="RecentCalls.Count">
+                                    <Binding.Converter>
+                                        <conv:PositiveToVisibleConverter/>
+                                    </Binding.Converter>
+                                </Binding>
+                            </Button.IsVisible>
+                        </Button>
+                    </Grid>
+
+                    <!-- Activity list -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding RecentCalls}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="6"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="m:OperatorCallItem">
+                                    <Border Background="{DynamicResource HoverBrush}" 
+                                            CornerRadius="8" Padding="12,10">
+                                        <Grid ColumnDefinitions="Auto,*,70,70,100">
+                                            <i:Icon Grid.Column="0" Value="{Binding DirectionIcon}" FontSize="20"
+                                                    Foreground="{Binding DirectionColor}"
+                                                    VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                            
+                                            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding PhoneNumber}" 
+                                                           FontWeight="SemiBold" FontSize="14"
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding CallDate, StringFormat={}{0:dd MMM HH:mm}}"
+                                                           FontSize="11"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            </StackPanel>
+                                            
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" 
+                                                        VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                        ToolTip.Tip="Davomiylik">
+                                                <i:Icon Value="mdi-clock-outline" FontSize="12" 
+                                                        Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                                <TextBlock Text="{Binding DurationFormatted}" FontSize="11"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            </StackPanel>
+                                            
+                                            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4" 
+                                                        VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                        ToolTip.Tip="Suhbat">
+                                                <i:Icon Value="mdi-phone-in-talk" FontSize="12" 
+                                                        Foreground="#10B981"/>
+                                                <TextBlock Text="{Binding BillSecFormatted}" FontSize="11"
+                                                           FontWeight="SemiBold"/>
+                                            </StackPanel>
+                                            
+                                            <Border Grid.Column="4" CornerRadius="4" Padding="8,3"
+                                                    Background="{Binding StatusBrush}"
+                                                    VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <TextBlock Text="{Binding Disposition}" 
+                                                           Foreground="White" FontSize="10" FontWeight="SemiBold"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
