@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OptiVis - Precision Lens</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #1e1e2e;
+        }
+        #out {
+            width: 100vw;
+            height: 100vh;
+        }
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #cdd6f4;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 18px;
+            text-align: center;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(205, 214, 244, 0.2);
+            border-top-color: #89b4fa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="out">
+        <div class="loading">
+            <div class="spinner"></div>
+            <div>OptiVis yuklanmoqda...</div>
+        </div>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>
